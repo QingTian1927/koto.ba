@@ -1,6 +1,14 @@
+using Kotoba.Application.DTOs;
+
 namespace Kotoba.Application.Interfaces;
 
+/// <summary>
+/// Service for uploading and managing file attachments
+/// Owner: Vinh (Reactions & Attachments)
+/// </summary>
 public interface IAttachmentService
 {
-    // TODO: Add file upload/download methods
+    Task<AttachmentDto?> UploadAttachmentAsync(UploadAttachmentRequest request);
+    Task<List<AttachmentDto>> GetAttachmentsAsync(Guid messageId);
 }
+

@@ -1,6 +1,14 @@
+using Kotoba.Application.DTOs;
+
 namespace Kotoba.Application.Interfaces;
 
+/// <summary>
+/// Service for managing user stories (24-hour expiration)
+/// Owner: Hoàn (AI & Social Features)
+/// </summary>
 public interface IStoryService
 {
-    // TODO: Add story methods
+    Task<StoryDto?> CreateStoryAsync(CreateStoryRequest request);
+    Task<List<StoryDto>> GetActiveStoriesAsync();
 }
+

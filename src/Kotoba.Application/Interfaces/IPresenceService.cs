@@ -1,7 +1,15 @@
+using Kotoba.Application.DTOs;
+
 namespace Kotoba.Application.Interfaces;
 
+/// <summary>
+/// Service for managing user online/offline presence
+/// Owner: Dũng (Identity & User Management)
+/// </summary>
 public interface IPresenceService
 {
-    // TODO: Add presence tracking methods
-    // Example: Task SetUserOnlineAsync(string userId);
+    Task SetOnlineAsync(string userId);
+    Task SetOfflineAsync(string userId);
+    Task<bool> GetUserPresenceAsync(string userId);
 }
+
