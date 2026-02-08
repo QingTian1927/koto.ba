@@ -1,3 +1,4 @@
+using Kotoba.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Kotoba.Infrastructure.Data;
@@ -15,7 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ASP.NET Core Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false; // For development
     options.Password.RequireDigit = true;
@@ -33,6 +34,15 @@ builder.Services.AddSignalR();
 // Memory Cache (for presence tracking, typing indicators)
 builder.Services.AddMemoryCache();
 
+// Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+
+// Note: Swagger UI is typically used in API projects; including here for completeness
+builder.Services.AddSwaggerGen();
+
+// MVC Controllers
+builder.Services.AddControllers();
+
 // Configure cookie authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -48,6 +58,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
+} else {
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -57,6 +70,8 @@ app.UseAntiforgery();
 // Authentication & Authorization (MUST be before MapRazorComponents)
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
