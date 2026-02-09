@@ -16,11 +16,20 @@ public class ApplicationDbContext : IdentityDbContext<User>
     // public DbSet<Conversation> Conversations { get; set; }
     // public DbSet<Message> Messages { get; set; }
     // public DbSet<Reaction> Reactions { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Reaction> Reactions { get; set; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
+        builder.Entity<Message>().ToTable("Message");
+        builder.Entity<Conversation>().ToTable("Conversation");
+        builder.Entity<Reaction>().ToTable("Reaction");
+        builder.Entity<ConversationParticipant>().ToTable("ConversationParticipant");
+        builder.Entity<Attachment>().ToTable("Attachment");
         builder.Entity<Reaction>()
             .HasOne(r => r.Message)
             .WithMany(m => m.Reactions)
