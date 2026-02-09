@@ -40,6 +40,9 @@ builder.Services.AddSignalR();
 // Memory Cache (for presence tracking, typing indicators)
 builder.Services.AddMemoryCache();
 
+// Message Service
+builder.Services.AddScoped<IMessageService, MessageService>();
+
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 
