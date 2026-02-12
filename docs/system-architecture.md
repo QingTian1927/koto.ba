@@ -14,8 +14,9 @@
 - IMemoryCache
 
 ### Frontend
-- Blazor Server
+- Blazor WebAssembly (WASM)
 - Razor Components
+- SignalR client
 
 ### Database
 - SQL Server
@@ -299,6 +300,8 @@ Tight coupling is avoided to enable parallel development.
 - User interface
 - Orchestrating subsystem interactions
 
+The UI runs as a Blazor WebAssembly client and communicates with the server through REST APIs and SignalR hubs.
+
 ### Includes
 - Chat UI
 - Reaction UI
@@ -306,8 +309,9 @@ Tight coupling is avoided to enable parallel development.
 - SignalR client integration
 
 ### Technologies
-- Blazor Server
+- Blazor WebAssembly (WASM)
 - Razor Components
+- SignalR client
 
 ### Principles
 - No business logic
@@ -592,7 +596,7 @@ Subsystems may only communicate via defined interfaces.
 **Realtime Client Integration**
 **UI & AI / Social Features**
 
-- Blazor Server UI
+- Blazor WebAssembly UI
 - SignalR client integration
 - Realtime UI updates
 - Typing & presence display

@@ -1,4 +1,4 @@
-﻿namespace Kotoba.Infrastructure;
+namespace Kotoba.Infrastructure;
 
 public class Class1
 {

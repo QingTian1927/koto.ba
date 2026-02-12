@@ -1,4 +1,4 @@
-﻿namespace Kotoba.Domain;
+namespace Kotoba.Domain;
 
 public class Class1
 {

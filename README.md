@@ -22,7 +22,7 @@ cd koto.ba
 
 ### 2. Configure Database Connection
 
-Open `src/Kotoba.Web/appsettings.json` and update the connection string:
+Open `src/Kotoba.Server/appsettings.json` and update the connection string:
 
 ```json
 {
@@ -50,7 +50,7 @@ dotnet restore
 This will create the database and all necessary tables:
 
 ```powershell
-dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### 5. Build the Solution
@@ -62,12 +62,55 @@ dotnet build
 ### 6. Run the Application
 
 ```powershell
-dotnet run --project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet run --project src/Kotoba.Server/Kotoba.Server.csproj
+
+# In another terminal, run the Blazor WebAssembly client
+dotnet run --project src/Kotoba.Client/Kotoba.Client.csproj
 ```
 
 The application will be available at:
-- **HTTP:** `http://localhost:5025` (or port shown in terminal)
-- **HTTPS:** `https://localhost:7xxx` (if configured)
+- **Client (UI):** `http://localhost:5000` (or port shown in terminal)
+- **Server (API):** `http://localhost:5025` (or port shown in terminal)
+
+---
+
+## Running the Project (Full Stack)
+
+### 1. Start the Server API
+
+```powershell
+dotnet run --project src/Kotoba.Server/Kotoba.Server.csproj
+```
+
+Note the URLs printed in the terminal (HTTP/HTTPS). You will use this to point the client at the API.
+
+### 2. Configure the Client API Base URL
+
+Open `src/Kotoba.Client/wwwroot/appsettings.json` and set the API base URL to match the server URL:
+
+```json
+{
+  "ApiBaseUrl": "http://localhost:5025/"
+}
+```
+
+### 3. Start the Blazor WebAssembly Client
+
+```powershell
+dotnet run --project src/Kotoba.Client/Kotoba.Client.csproj
+```
+
+Open the client URL printed in the terminal (typically `http://localhost:5000`).
+
+### 4. HTTPS (Optional)
+
+If you want HTTPS locally:
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+Update `ApiBaseUrl` to the HTTPS URL shown by the server.
 
 ---
 
@@ -78,13 +121,13 @@ Instead of storing passwords in `appsettings.json`, use User Secrets:
 ### Initialize User Secrets
 
 ```powershell
-dotnet user-secrets init --project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet user-secrets init --project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### Set Connection String
 
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=KotobaDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=true;MultipleActiveResultSets=true" --project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=YOUR_SERVER;Database=KotobaDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=true;MultipleActiveResultSets=true" --project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 Now you can safely commit `appsettings.json` without exposing credentials.
@@ -125,7 +168,8 @@ git merge develop
 **3. Test your changes:**
 ```powershell
 dotnet build
-dotnet run --project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet run --project src/Kotoba.Server/Kotoba.Server.csproj
+dotnet run --project src/Kotoba.Client/Kotoba.Client.csproj
 ```
 
 **4. Commit and push:**
@@ -147,25 +191,25 @@ git push origin feature/your-subsystem
 ### Creating a New Migration (After Adding/Modifying Entities)
 
 ```powershell
-dotnet ef migrations add YourMigrationName --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef migrations add YourMigrationName --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### Applying Migrations
 
 ```powershell
-dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### Viewing Migration History
 
 ```powershell
-dotnet ef migrations list --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef migrations list --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### Rolling Back Last Migration (if not pushed)
 
 ```powershell
-dotnet ef migrations remove --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef migrations remove --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ---
@@ -175,11 +219,12 @@ dotnet ef migrations remove --project src/Kotoba.Infrastructure/Kotoba.Infrastru
 ```
 koto.ba/
 ├── src/
-│   ├── Kotoba.Web/                    (Blazor Server UI - Your entry point)
-│   ├── Kotoba.Application/            (Service interfaces & DTOs)
-│   ├── Kotoba.Domain/                 (Entities, Enums, Events)
-│   ├── Kotoba.Infrastructure/         (EF Core, SignalR, Identity)
-│   └── Kotoba.Infrastructure.AI/      (AI service implementation)
+│   ├── Kotoba.Client/                 (Blazor WebAssembly UI)
+│   ├── Kotoba.Server/                 (ASP.NET Core Web API + SignalR)
+│   ├── Kotoba.Shared/                 (Shared DTO request/response models)
+│   ├── Kotoba.Application/            (Use-case service interfaces)
+│   ├── Kotoba.Domain/                 (Entities, Enums, Value Objects)
+│   └── Kotoba.Infrastructure/         (EF Core, Identity, repositories)
 ├── tests/
 └── Kotoba.sln
 ```
@@ -191,7 +236,7 @@ koto.ba/
 | **Identity & User** | `Infrastructure/Identity/`<br>`Application/Interfaces/IUserService.cs`<br>`Domain/Entities/User.cs` |
 | **Chat & Messaging** | `Infrastructure/Chat/`<br>`Application/Interfaces/IMessageService.cs`<br>`Domain/Entities/Message.cs` |
 | **Reactions & Attachments** | `Infrastructure/Reactions/`<br>`Application/Interfaces/IReactionService.cs`<br>`Domain/Entities/Reaction.cs` |
-| **AI & Social** | `Infrastructure.AI/`<br>`Application/Interfaces/IAIReplyService.cs` |
+| **AI & Social** | `Infrastructure/`<br>`Application/Interfaces/IAIReplyService.cs` |
 
 ---
 
@@ -203,8 +248,11 @@ koto.ba/
 # Build entire solution
 dotnet build
 
-# Run the web application
-dotnet run --project src/Kotoba.Web/Kotoba.Web.csproj
+# Run the server API
+dotnet run --project src/Kotoba.Server/Kotoba.Server.csproj
+
+# Run the client UI (separate terminal)
+dotnet run --project src/Kotoba.Client/Kotoba.Client.csproj
 
 # Clean build artifacts
 dotnet clean
@@ -250,8 +298,8 @@ git log --oneline
 **Solution:**
 ```powershell
 # Try recreating the database
-dotnet ef database drop --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
-dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef database drop --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
+dotnet ef database update --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 ### ❌ Build errors about missing packages
@@ -270,7 +318,7 @@ dotnet build
 **Solution:**
 ```powershell
 # Remove the migration (if you haven't pushed it)
-dotnet ef migrations remove --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Web/Kotoba.Web.csproj
+dotnet ef migrations remove --project src/Kotoba.Infrastructure/Kotoba.Infrastructure.csproj --startup-project src/Kotoba.Server/Kotoba.Server.csproj
 ```
 
 **Error:** "Unable to create an object of type 'ApplicationDbContext'"
@@ -325,7 +373,7 @@ taskkill /PID <process_id> /F
 ## Tech Stack Reference
 
 - **Backend:** ASP.NET Core (.NET 8), MVC, SignalR, EF Core, Identity
-- **Frontend:** Blazor Server, Razor Components
+- **Frontend:** Blazor WebAssembly (WASM)
 - **Database:** SQL Server
 - **Real-time:** SignalR (WebSockets)
 - **AI:** External API integration via HttpClient
@@ -356,8 +404,9 @@ taskkill /PID <process_id> /F
 - [ ] Run `dotnet restore`
 - [ ] Run `dotnet ef database update` (to create database)
 - [ ] Run `dotnet build` (verify everything compiles)
-- [ ] Run `dotnet run --project src/Kotoba.Web/Kotoba.Web.csproj`
-- [ ] Open browser to `http://localhost:5025`
+- [ ] Run `dotnet run --project src/Kotoba.Server/Kotoba.Server.csproj`
+- [ ] Run `dotnet run --project src/Kotoba.Client/Kotoba.Client.csproj`
+- [ ] Open browser to the client URL (typically `http://localhost:5000`)
 - [ ] Create your feature branch
 - [ ] Start coding! 🚀
 

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kotoba.Application\Kotoba.Application.csproj" />
     <ProjectReference Include="..\Kotoba.Domain\Kotoba.Domain.csproj" />
+    <ProjectReference Include="..\Kotoba.Shared\Kotoba.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace Kotoba.Domain.Enums;
+namespace Kotoba.Domain.Enums;
 
 public enum FileType
 {
