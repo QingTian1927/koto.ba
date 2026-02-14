@@ -16,18 +16,18 @@ namespace Kotoba.Server.Hubs
             );
         }
 
-        public async Task SendTestMessage(string message)
-        {
-            await Clients.All.SendAsync(
-                "MessageSent",
-                new
-                {
-                    MessageId = Guid.NewGuid(),
-                    Content = message,
-                    Time = DateTime.UtcNow
-                }
-            );
-        }
+        //public async Task SendTestMessage(string message)
+        //{
+        //    await Clients.All.SendAsync(
+        //        "MessageSent",
+        //        new
+        //        {
+        //            MessageId = Guid.NewGuid(),
+        //            Content = message,
+        //            Time = DateTime.UtcNow
+        //        }
+        //    );
+        //}
 
         public async Task SendTestLeave()
         {

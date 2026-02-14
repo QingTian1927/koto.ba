@@ -89,6 +89,13 @@
         messagesByConversation = response.Messages
             .GroupBy(m => m.ConversationId)
             .ToDictionary(g => g.Key, g => g.ToList());
+
+
+        _hubConnection?.On<MessageDto>("SentMessage", message =>
+        {
+            SelectedMessages.Add(message);
+            InvokeAsync(StateHasChanged);
+        });
     }
 
     private async Task InitializeSignalR()
@@ -124,10 +131,10 @@
         if (_hubConnection is null)
             return;
 
-        _hubConnection.On<object>("MessageSent", payload =>
-        {
-            Console.WriteLine($"MessageSent event received: {payload}");
-        });
+        // _hubConnection.On<object>("MessageSent", payload =>
+        // {
+        //     Console.WriteLine($"MessageSent event received: {payload}");
+        // });
 
         _hubConnection.On<object>("UserJoined", payload =>
         {
@@ -181,32 +188,34 @@
     private string newMessage = string.Empty;
 
     private async Task SendMessage()
-    {
-        if (string.IsNullOrWhiteSpace(newMessage) || selectedConversationId is null)
-            return;
-
-        var sendRequest = new SendMessageRequest
-        {
-            ConversationId = selectedConversationId.Value,
-            SenderId = "user-1",
-            Content = newMessage
-        };
-
-        await Http.PostAsJsonAsync(
-            $"api/conversations/{selectedConversationId.Value}/messages",
-            sendRequest);
-
-        if (_hubConnection is null)
-            return;
-
+    {             
         try
         {
-            await _hubConnection.InvokeAsync(
-                "SendTestMessage",
-                newMessage
-            );
+            if (string.IsNullOrWhiteSpace(newMessage) || selectedConversationId is null)
+            return;
 
-            Console.WriteLine($"Send message {newMessage} to conversation {selectedConversationId}");
+            var sentMessage = new MessageDto
+            {
+                ConversationId = selectedConversationId.Value,
+                SenderId = "user-1",
+                Content = newMessage,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            SelectedMessages.Add(sentMessage);
+
+            StateHasChanged();
+
+            var sendRequest = new SendMessageRequest
+            {
+                ConversationId = selectedConversationId.Value,
+                SenderId = "user-1",
+                Content = newMessage
+            };
+
+            await Http.PostAsJsonAsync(
+                $"api/conversations/{selectedConversationId.Value}/messages",
+                sendRequest);   
         }
         catch (Exception ex)
         {
@@ -215,15 +224,15 @@
 
         newMessage = string.Empty;
 
-        var response = await Http.GetFromJsonAsync<ConversationsResponse>("api/conversations/user-1");
-        if (response is null)
-        {
-            return;
-        }
+        // var response = await Http.GetFromJsonAsync<ConversationsResponse>("api/conversations/user-1");
+        // if (response is null)
+        // {
+        //     return;
+        // }
 
-        messagesByConversation = response.Messages
-            .GroupBy(m => m.ConversationId)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        // messagesByConversation = response.Messages
+        //     .GroupBy(m => m.ConversationId)
+        //     .ToDictionary(g => g.Key, g => g.ToList());
     }
 
     private async Task LeaveConservation()

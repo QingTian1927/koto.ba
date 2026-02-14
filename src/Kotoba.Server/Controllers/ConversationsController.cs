@@ -1,6 +1,9 @@
 using Kotoba.Application.Interfaces;
+using Kotoba.Infrastructure.Data;
+using Kotoba.Server.Hubs;
 using Kotoba.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Kotoba.Server.Controllers;
 
@@ -9,10 +12,13 @@ namespace Kotoba.Server.Controllers;
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationService _conversationService;
+    
+    private readonly IHubContext<ChatHub> _hubContext;
 
-    public ConversationsController(IConversationService conversationService)
+    public ConversationsController(IConversationService conversationService, IHubContext<ChatHub> hubContext)
     {
-        _conversationService = conversationService;
+        _conversationService = conversationService;        
+        _hubContext = hubContext;
     }
 
     [HttpGet("{userId}")]
@@ -38,6 +44,15 @@ public class ConversationsController : ControllerBase
         }
 
         await _conversationService.AddMessage(conversationId.ToString(), request.Content);
-        return NoContent();
+        MessageDto message = new MessageDto
+        {
+            MessageId = Guid.NewGuid(),
+            ConversationId = conversationId,
+            SenderId = request.SenderId,
+            Content = request.Content,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _hubContext.Clients.Group(conversationId.ToString()).SendAsync("SentMessage", message);
+        return Ok(message);
     }
 }
