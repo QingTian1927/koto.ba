@@ -1,14 +1,13 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for broadcasting realtime events via SignalR
-/// Owner: Hoàn (Realtime Interaction & Typing)
+/// Owner: HoÃ n (Realtime Interaction & Typing)
 /// </summary>
 public interface IRealtimeChatService
 {
     Task BroadcastMessageAsync(MessageDto message);
     Task BroadcastTypingAsync(TypingStatusDto typingStatus);
 }
-

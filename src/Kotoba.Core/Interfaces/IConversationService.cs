@@ -1,6 +1,6 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for managing conversations (1-1 and group)
@@ -10,8 +10,6 @@ public interface IConversationService
 {
     Task<ConversationDto?> CreateDirectConversationAsync(string userAId, string userBId);
     Task<ConversationDto?> CreateGroupConversationAsync(CreateGroupRequest request);
-    Task<(List<ConversationDto> Conversations, List<MessageDto> Messages)> GetUserConversationsAsync(string userId);
-    Task AddMessage(string conversationId, string messageContent);
+    Task<List<ConversationDto>> GetUserConversationsAsync(string userId);
     Task<ConversationDto?> GetConversationDetailAsync(Guid conversationId);
 }
-

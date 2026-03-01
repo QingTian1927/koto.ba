@@ -1,10 +1,10 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for managing user online/offline presence
-/// Owner: Dũng (Identity & User Management)
+/// Owner: DÅ©ng (Identity & User Management)
 /// </summary>
 public interface IPresenceService
 {
@@ -12,4 +12,3 @@ public interface IPresenceService
     Task SetOfflineAsync(string userId);
     Task<bool> GetUserPresenceAsync(string userId);
 }
-

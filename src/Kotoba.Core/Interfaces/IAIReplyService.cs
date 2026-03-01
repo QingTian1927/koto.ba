@@ -1,13 +1,12 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for generating AI reply suggestions
-/// Owner: Hoàn (AI & Social Features)
+/// Owner: HoÃ n (AI & Social Features)
 /// </summary>
 public interface IAIReplyService
 {
     Task<List<string>> GenerateSuggestionsAsync(AIReplyRequest request);
 }
-

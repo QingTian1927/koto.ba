@@ -1,6 +1,6 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for sending and retrieving messages
@@ -11,4 +11,3 @@ public interface IMessageService
     Task<MessageDto?> SendMessageAsync(SendMessageRequest request);
     Task<List<MessageDto>> GetMessagesAsync(Guid conversationId, PagingRequest paging);
 }
-

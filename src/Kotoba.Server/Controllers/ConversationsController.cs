@@ -1,7 +1,6 @@
-using Kotoba.Application.Interfaces;
-using Kotoba.Infrastructure.Data;
+﻿using Kotoba.Core.Interfaces;
+using Kotoba.Domain.DTOs;
 using Kotoba.Server.Hubs;
-using Kotoba.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -12,47 +11,51 @@ namespace Kotoba.Server.Controllers;
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationService _conversationService;
-    
+    private readonly IMessageService _messageService;
     private readonly IHubContext<ChatHub> _hubContext;
 
-    public ConversationsController(IConversationService conversationService, IHubContext<ChatHub> hubContext)
+    public ConversationsController(
+        IConversationService conversationService,
+        IMessageService messageService,
+        IHubContext<ChatHub> hubContext)
     {
-        _conversationService = conversationService;        
+        _conversationService = conversationService;
+        _messageService = messageService;
         _hubContext = hubContext;
     }
 
     [HttpGet("{userId}")]
-    public async Task<ActionResult<ConversationsResponse>> GetUserConversations(string userId)
+    public async Task<ActionResult<List<ConversationDto>>> GetUserConversations(string userId)
     {
-        var result = await _conversationService.GetUserConversationsAsync(userId);
+        var conversations = await _conversationService.GetUserConversationsAsync(userId);
+        return Ok(conversations);
+    }
 
-        var response = new ConversationsResponse
-        {
-            Conversations = result.Conversations,
-            Messages = result.Messages
-        };
-
-        return Ok(response);
+    [HttpGet("{conversationId:guid}/messages")]
+    public async Task<ActionResult<List<MessageDto>>> GetMessages(
+        Guid conversationId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var messages = await _messageService.GetMessagesAsync(
+            conversationId,
+            new PagingRequest { Page = page, PageSize = pageSize });
+        return Ok(messages);
     }
 
     [HttpPost("{conversationId:guid}/messages")]
-    public async Task<IActionResult> AddMessage(Guid conversationId, [FromBody] SendMessageRequest request)
+    public async Task<ActionResult<MessageDto>> SendMessage(
+        Guid conversationId,
+        [FromBody] SendMessageRequest request)
     {
-        if (conversationId == Guid.Empty)
-        {
-            return BadRequest("Conversation id is required.");
-        }
+        request.ConversationId = conversationId;
+        var message = await _messageService.SendMessageAsync(request);
+        if (message == null)
+            return BadRequest("Failed to send message.");
 
-        await _conversationService.AddMessage(conversationId.ToString(), request.Content);
-        MessageDto message = new MessageDto
-        {
-            MessageId = Guid.NewGuid(),
-            ConversationId = conversationId,
-            SenderId = request.SenderId,
-            Content = request.Content,
-            CreatedAt = DateTime.UtcNow
-        };
-        await _hubContext.Clients.Group(conversationId.ToString()).SendAsync("SentMessage", message);
+        await _hubContext.Clients
+            .Group(conversationId.ToString())
+            .SendAsync("SentMessage", message);
         return Ok(message);
     }
 }

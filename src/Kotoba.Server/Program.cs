@@ -1,9 +1,11 @@
-using Kotoba.Domain.Entities;
+﻿using Kotoba.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Kotoba.Infrastructure.Data;
-using Kotoba.Application.Interfaces;
-using Kotoba.Infrastructure.Implementations.Services;
+using Kotoba.Core.Interfaces;
+using Kotoba.Infrastructure.Services.Conversations;
+using Kotoba.Infrastructure.Services.Messages;
+using Kotoba.Infrastructure.Services.Identity;
 using Kotoba.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +30,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // ASP.NET Core Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false; // For development
+    options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
@@ -40,6 +42,9 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 // Services
 builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IPresenceService, PresenceService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // SignalR
 builder.Services.AddSignalR();
@@ -49,8 +54,6 @@ builder.Services.AddMemoryCache();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-
-// Note: Swagger UI is typically used in API projects; including here for completeness
 builder.Services.AddSwaggerGen();
 
 // Configure cookie authentication

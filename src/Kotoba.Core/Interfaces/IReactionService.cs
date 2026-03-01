@@ -1,7 +1,7 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 using Kotoba.Domain.Enums;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for managing message reactions
@@ -13,4 +13,3 @@ public interface IReactionService
     Task<bool> RemoveReactionAsync(string userId, Guid messageId);
     Task<List<ReactionDto>> GetReactionsAsync(Guid messageId);
 }
-

@@ -1,10 +1,10 @@
-using Kotoba.Shared.DTOs;
+﻿using Kotoba.Domain.DTOs;
 
-namespace Kotoba.Application.Interfaces;
+namespace Kotoba.Core.Interfaces;
 
 /// <summary>
 /// Service for managing user accounts and profiles
-/// Owner: Dũng (Identity & User Management)
+/// Owner: DÅ©ng (Identity & User Management)
 /// </summary>
 public interface IUserService
 {
@@ -13,4 +13,3 @@ public interface IUserService
     Task<UserProfile?> GetUserProfileAsync(string userId);
     Task<bool> UpdateUserProfileAsync(string userId, UpdateProfileRequest request);
 }
-

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Kotoba.Application\Kotoba.Application.csproj" />
     <ProjectReference Include="..\Kotoba.Domain\Kotoba.Domain.csproj" />
     <ProjectReference Include="..\Kotoba.Shared\Kotoba.Shared.csproj" />
+    <ProjectReference Include="..\Kotoba.Core\Kotoba.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,4 +30,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>
