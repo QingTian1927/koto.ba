@@ -88,4 +88,14 @@ app.MapControllers();
 
 app.MapHub<ChatHub>("/chathub");
 
+// Health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
+
+// Root redirect to Swagger
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger", permanent: false);
+    return Task.CompletedTask;
+});
+
 app.Run();

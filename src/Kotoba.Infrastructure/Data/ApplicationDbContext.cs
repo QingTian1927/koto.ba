@@ -11,11 +11,13 @@ public class ApplicationDbContext : IdentityDbContext<User>
     {
     }
 
-    // TODO: Add DbSet properties for each subsystem
-    // Example:
-    // public DbSet<Conversation> Conversations { get; set; }
-    // public DbSet<Message> Messages { get; set; }
-    // public DbSet<Reaction> Reactions { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Reaction> Reactions { get; set; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
+    public DbSet<Story> Stories { get; set; }
+    public DbSet<CurrentThought> CurrentThoughts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
