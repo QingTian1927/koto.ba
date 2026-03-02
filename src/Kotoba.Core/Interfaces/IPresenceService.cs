@@ -11,4 +11,5 @@ public interface IPresenceService
     Task SetOnlineAsync(string userId);
     Task SetOfflineAsync(string userId);
     Task<bool> GetUserPresenceAsync(string userId);
+    Task<List<string>> GetAllOnlineUsersAsync();
 }

@@ -44,6 +44,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IPresenceService, PresenceService>();
+builder.Services.AddScoped<IPresenceBroadcastService, PresenceBroadcastService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 // SignalR
