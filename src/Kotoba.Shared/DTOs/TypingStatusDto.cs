@@ -6,4 +6,3 @@ public class TypingStatusDto
     public Guid ConversationId { get; set; }
     public bool IsTyping { get; set; }
 }
-

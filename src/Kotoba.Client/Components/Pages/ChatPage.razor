@@ -1,0 +1,111 @@
+@page "/chat"
+@page "/chat/{ConversationId:guid}"
+@using Kotoba.Client.Services
+@using Kotoba.Domain.Enums
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ChatService Chat
+@inject AuthenticationStateProvider AuthState
+@implements IDisposable
+
+<div class="chat-layout">
+    
+    <aside class="conversation-list">
+        <h3>Tin nhắn</h3>
+        @foreach (var conv in Chat.Conversations)
+        {
+            var other = conv.Participants.FirstOrDefault(p => p.UserId != currentUserId);
+            <div class="conv-item @(conv.ConversationId == ConversationId ? "active" : "")"
+                 @onclick="() => SelectConversation(conv.ConversationId)">
+                <img src="@(other?.AvatarUrl ?? "/default-avatar.png")" class="avatar" />
+                <div>
+                    <strong>@(other?.DisplayName ?? conv.GroupName)</strong>
+                    <small>@conv.LastMessage?.Content</small>
+                </div>
+            </div>
+        }
+    </aside>
+    
+    <main class="chat-window">
+        @if (ConversationId != Guid.Empty && Chat.Messages.TryGetValue(ConversationId, out var messages))
+        {
+            <div class="messages" @ref="messagesEnd">
+                @foreach (var msg in messages)
+                {
+                    <div class="message @(msg.SenderId == currentUserId ? "mine" : "theirs")
+                                                @(msg.Status == MessageStatus.Pending ? "pending" : "sent")">
+                        <div class="bubble">@msg.Content</div>
+                        <small>
+                            @if (msg.Status == MessageStatus.Pending)
+                            {
+                                <span>⏳ Đang gửi...</span>
+                            }
+                            else
+                            {
+                                <span>@msg.CreatedAt.ToString("HH:mm") ✓</span>
+                            }
+                        </small>
+                    </div>
+                }
+            </div>
+
+            <div class="message-input">
+                <input @bind="inputText"
+                       @bind:event="oninput"
+                       @onkeydown="OnKeyDown"
+                       placeholder="Nhập tin nhắn..." />
+                <button @onclick="SendMessage">Gửi</button>
+            </div>
+        }
+        else
+        {
+            <p class="empty-state">Chọn một cuộc trò chuyện để bắt đầu</p>
+        }
+    </main>
+</div>
+
+@code {
+    [Parameter] public Guid ConversationId { get; set; }
+
+    private string currentUserId = "";
+    private string inputText = "";
+    private ElementReference messagesEnd;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthState.GetAuthenticationStateAsync();
+        currentUserId = auth.User.FindFirst(
+            System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+
+        Chat.OnChange += StateHasChanged;
+         await Chat.StartAsync();
+        await Chat.LoadConversationsAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ConversationId != Guid.Empty)
+            await Chat.JoinConversationAsync(ConversationId);
+    }
+
+    private async Task SelectConversation(Guid id)
+    {
+        ConversationId = id;
+        await Chat.JoinConversationAsync(id);
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(inputText)) return;
+        var content = inputText;
+        inputText = "";
+        await Chat.SendMessageAsync(ConversationId, content, currentUserId);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+            await SendMessage();
+    }
+
+    public void Dispose() => Chat.OnChange -= StateHasChanged;
+}

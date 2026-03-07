@@ -8,4 +8,3 @@ public class AIReplyRequest
     public string OriginalMessage { get; set; } = string.Empty;
     public AITone Tone { get; set; } = AITone.Friendly;
 }
-

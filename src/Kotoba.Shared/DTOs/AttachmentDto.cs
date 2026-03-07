@@ -10,4 +10,3 @@ public class AttachmentDto
     public FileType FileType { get; set; }
     public string FileUrl { get; set; } = string.Empty;
 }
-
