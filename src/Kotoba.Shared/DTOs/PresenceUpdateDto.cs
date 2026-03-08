@@ -1,10 +1,9 @@
-namespace Kotoba.Domain.DTOs;
+namespace Kotoba.Shared.DTOs;
 
-public class UserProfile
+public class PresenceUpdateDto
 {
     public string UserId { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
-    public string? AvatarUrl { get; set; }
     public bool IsOnline { get; set; }
-    public DateTime? LastSeenAt { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }

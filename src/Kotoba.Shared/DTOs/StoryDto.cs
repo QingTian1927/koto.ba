@@ -8,4 +8,3 @@ public class StoryDto
     public string? MediaUrl { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
-

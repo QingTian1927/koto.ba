@@ -1,5 +1,5 @@
-﻿using Kotoba.Core.Interfaces;
-using Kotoba.Domain.DTOs;
+using Kotoba.Core.Interfaces;
+using Kotoba.Shared.DTOs;
 using Kotoba.Server.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;

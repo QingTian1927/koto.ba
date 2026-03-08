@@ -1,4 +1,4 @@
-﻿using Kotoba.Domain.DTOs;
+using Kotoba.Shared.DTOs;
 
 namespace Kotoba.Core.Interfaces;
 

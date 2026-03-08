@@ -1,3 +1,5 @@
+using Kotoba.Domain.Enums;
+
 namespace Kotoba.Shared.DTOs;
 
 public class MessageDto
@@ -7,5 +9,6 @@ public class MessageDto
     public string SenderId { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-}
 
+    public MessageStatus? Status { get; set; }
+}

@@ -1,5 +1,5 @@
 using Kotoba.Core.Interfaces;
-using Kotoba.Domain.DTOs;
+using Kotoba.Shared.DTOs;
 
 namespace Kotoba.Infrastructure.Services.Identity;
 

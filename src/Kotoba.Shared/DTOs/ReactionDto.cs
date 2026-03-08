@@ -9,4 +9,3 @@ public class ReactionDto
     public ReactionType Type { get; set; }
     public DateTime CreatedAt { get; set; }
 }
-

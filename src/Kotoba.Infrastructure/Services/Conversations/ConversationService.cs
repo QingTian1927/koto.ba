@@ -1,5 +1,5 @@
-﻿using Kotoba.Core.Interfaces;
-using Kotoba.Domain.DTOs;
+using Kotoba.Core.Interfaces;
+using Kotoba.Shared.DTOs;
 using Kotoba.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

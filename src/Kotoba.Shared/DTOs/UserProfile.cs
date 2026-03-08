@@ -8,4 +8,3 @@ public class UserProfile
     public bool IsOnline { get; set; }
     public DateTime? LastSeenAt { get; set; }
 }
-
