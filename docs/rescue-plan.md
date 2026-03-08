@@ -86,11 +86,11 @@ Ai phụ trách gì → giữ nguyên.
 
 ## Nga
 
-[] Conversation create direct
-[] Get conversation list
-[] SignalR ChatHub
-[] Join group theo ConversationId
-[] BroadcastMessage basic
+[x] Conversation create direct
+[x] Get conversation list
+[x] SignalR ChatHub
+[x] Join group theo ConversationId
+[x] BroadcastMessage basic
 
 ## Vinh
 
@@ -223,10 +223,10 @@ Story + Thought hoạt động.
 
 ## Dũng
 
-[] IAIReplyService
-[] Call AI API
-[] Tone enum
-[] Return 3 suggestions
+[x] IAIReplyService
+[x] Call AI API
+[x] Tone enum
+[x] Return 3 suggestions
 
 ## Hoàn
 

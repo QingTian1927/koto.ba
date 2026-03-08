@@ -6,6 +6,8 @@ using Kotoba.Core.Interfaces;
 using Kotoba.Infrastructure.Services.Conversations;
 using Kotoba.Infrastructure.Services.Messages;
 using Kotoba.Infrastructure.Services.Identity;
+using Kotoba.Infrastructure.Services.Social;
+using Kotoba.Infrastructure.Configuration;
 using Kotoba.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +49,12 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IPresenceService, PresenceService>();
 builder.Services.AddScoped<IPresenceBroadcastService, PresenceBroadcastService>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+// AI Services
+builder.Services.Configure<GoogleGeminiOptions>(
+    builder.Configuration.GetSection(GoogleGeminiOptions.SectionName));
+builder.Services.AddScoped<IAIReplyService, AIReplyService>();
+builder.Services.AddHttpClient(); // Required for AI service HTTP calls
 
 // SignalR
 builder.Services.AddSignalR();

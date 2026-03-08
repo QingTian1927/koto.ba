@@ -1,6 +1,7 @@
 using Kotoba.Shared.DTOs;
 using Kotoba.Domain.Entities;
 using Kotoba.Domain.Enums;
+using Kotoba.Core.Interfaces;
 using Kotoba.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,10 +15,39 @@ namespace Kotoba.Server.Hubs
     public class ChatHub : Hub
     {
         private readonly ApplicationDbContext _db;
+        private readonly IPresenceBroadcastService _presenceBroadcastService;
 
-        public ChatHub(ApplicationDbContext db)
+        public ChatHub(ApplicationDbContext db, IPresenceBroadcastService presenceBroadcastService)
         {
             _db = db;
+            _presenceBroadcastService = presenceBroadcastService;
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.UserIdentifier;
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var update = await _presenceBroadcastService.NotifyUserOnlineAsync(userId);
+                await Clients.All.SendAsync("PresenceChanged", update);
+
+                var onlineUsers = await _presenceBroadcastService.GetAllOnlineUsersAsync();
+                await Clients.Caller.SendAsync("OnlineUsersSnapshot", onlineUsers);
+            }
+
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var userId = Context.UserIdentifier;
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var update = await _presenceBroadcastService.NotifyUserOfflineAsync(userId);
+                await Clients.All.SendAsync("PresenceChanged", update);
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
 
         public async Task JoinConversation(Guid conversationId)
@@ -29,7 +59,7 @@ namespace Kotoba.Server.Hubs
 
             if (!isParticipant)
             {
-                 throw new HubException("You are not a participant of this conversation.");                
+                 throw new HubException("You are not a participant of this conversation.");
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, conversationId.ToString());
@@ -143,7 +173,7 @@ namespace Kotoba.Server.Hubs
             // Load sender info
             var sender = await _db.Users.FindAsync(userId);
 
-            var dto = new MessageDto { 
+            var dto = new MessageDto {
                 MessageId = message.Id,
                 ConversationId = message.ConversationId,
                 SenderId = message.SenderId,
@@ -157,7 +187,7 @@ namespace Kotoba.Server.Hubs
             await Clients.Group(request.ConversationId.ToString())
                 .SendAsync("MessageConfirmed", dto, request.TempId);
         }
-        
+
         private async Task<ConversationDto> MapConversationDto(Conversation c)
         {
             var lastMessage = c.Messages

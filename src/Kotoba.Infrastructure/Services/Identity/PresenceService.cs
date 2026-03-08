@@ -1,5 +1,7 @@
 ﻿using Kotoba.Core.Interfaces;
+using Kotoba.Domain.Entities;
 using Kotoba.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Kotoba.Infrastructure.Services.Identity;
@@ -37,7 +39,13 @@ public class PresenceService : IPresenceService
             _cache.Set(OnlineUsersKey, onlineUsers);
         }
 
-        await Task.CompletedTask;
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            user.IsOnline = true;
+            user.LastSeenAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task SetOfflineAsync(string userId)
@@ -53,7 +61,13 @@ public class PresenceService : IPresenceService
             _cache.Set(OnlineUsersKey, onlineUsers);
         }
 
-        await Task.CompletedTask;
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null)
+        {
+            user.IsOnline = false;
+            user.LastSeenAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<bool> GetUserPresenceAsync(string userId)
