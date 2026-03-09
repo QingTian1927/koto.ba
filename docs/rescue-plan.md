@@ -94,17 +94,17 @@ Ai phụ trách gì → giữ nguyên.
 
 ## Vinh
 
-[] Message entity
-[] SendMessageAsync
-[] Save DB
+[x] Message entity
+[x] SendMessageAsync
+[x] Save DB
 [] GetMessages (paging basic)
 
 ## Hoàn
 
-[] UI Login
-[] UI Chat page cơ bản
-[] Connect SignalR
-[] Hiển thị message realtime
+[x] UI Login
+[x] UI Chat page cơ bản
+[x] Connect SignalR
+[x] Hiển thị message realtime
 
 ---
 
