@@ -11,4 +11,8 @@ public class MessageDto
     public DateTime CreatedAt { get; set; }
 
     public MessageStatus? Status { get; set; }
+    public List<ReactionDto> Reactions { get; set; } = new();
+    public List<AttachmentDto> Attachments { get; set; } = new();
+}
+
 }

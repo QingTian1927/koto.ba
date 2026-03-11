@@ -9,6 +9,8 @@ using Kotoba.Infrastructure.Services.Identity;
 using Kotoba.Infrastructure.Services.Social;
 using Kotoba.Infrastructure.Configuration;
 using Kotoba.Server.Hubs;
+using Kotoba.Infrastructure.Services.Attachments;
+using Kotoba.Infrastructure.Services.Reactions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Services
+builder.Services.AddScoped<IReactionService, ReactionService>();
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IPresenceService, PresenceService>();
@@ -89,6 +93,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();  // ← THÊM: serve file WASM từ Client
 app.UseStaticFiles();           // ← THÊM: serve wwwroot
+var uploadsPath = builder.Configuration["Attachments:UploadPath"]
+    ?? Path.Combine(app.Environment.ContentRootPath, "uploads");
+
+Directory.CreateDirectory(uploadsPath); 
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 app.UseRouting();
 app.UseCors("ClientCors");
 
