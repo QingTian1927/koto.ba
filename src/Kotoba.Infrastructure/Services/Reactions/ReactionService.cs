@@ -6,7 +6,7 @@ using Kotoba.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kotoba.Infrastructure.Services.Reactions
-{ 
+{
     public class ReactionService : IReactionService
     {
         private readonly ApplicationDbContext _context;
@@ -79,4 +79,6 @@ namespace Kotoba.Infrastructure.Services.Reactions
                 })
                 .ToListAsync();
         }
+    }
+
 }
