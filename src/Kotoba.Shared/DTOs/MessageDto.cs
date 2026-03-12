@@ -15,4 +15,3 @@ public class MessageDto
     public List<AttachmentDto> Attachments { get; set; } = new();
 }
 
-}
