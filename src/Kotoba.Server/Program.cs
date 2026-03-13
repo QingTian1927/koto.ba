@@ -22,7 +22,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ClientCors", policy =>
-        policy.WithOrigins("https://localhost:5001", "http://localhost:5001")
+        policy.WithOrigins("https://localhost:5001", "http://localhost:5000")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
