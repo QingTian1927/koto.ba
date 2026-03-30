@@ -14,6 +14,7 @@ namespace Kotoba.Modules.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ReviewedAt { get; set; }
         public string? ReviewerId { get; set; }
+        public string? AdminDecisionReason { get; set; }
         public string? ReportedContent { get; set; }
         public string? ReportedUserId { get; set; }  // người bị report
         public virtual User? ReportedUser { get; set; }

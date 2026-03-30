@@ -271,7 +271,24 @@
                                             }
                                         </td>
                                         <td>@report.CategoryName</td>
-                                        <td>@(string.IsNullOrWhiteSpace(report.Description) ? "-" : report.Description)</td>
+                                        <td>
+                                            @if (string.IsNullOrWhiteSpace(report.Description) && string.IsNullOrWhiteSpace(report.AdminDecisionReason))
+                                            {
+                                                <span>-</span>
+                                            }
+                                            else
+                                            {
+                                                @if (!string.IsNullOrWhiteSpace(report.Description))
+                                                {
+                                                    <div>@report.Description</div>
+                                                }
+
+                                                @if (!string.IsNullOrWhiteSpace(report.AdminDecisionReason))
+                                                {
+                                                    <div class="admin-stat-meta">Admin reason: @report.AdminDecisionReason</div>
+                                                }
+                                            }
+                                        </td>
                                         <td>
                                             <span class="admin-tag @(report.Status == ReportStatus.Pending ? "admin-tag-warning" : string.Empty)">
                                                 @report.Status
@@ -283,7 +300,7 @@
                                                 <button class="admin-action-btn" disabled="@IsProcessingAction" @onclick="() => MarkReviewedAsync(report)">
                                                     Mark Reviewed
                                                 </button>
-                                                <button class="admin-action-btn admin-action-disable" disabled="@IsProcessingAction" @onclick="() => DismissAsync(report.ReportId)">
+                                                <button class="admin-action-btn admin-action-disable" disabled="@IsProcessingAction" @onclick="() => DismissAsync(report)">
                                                     Dismiss
                                                 </button>
                                             }
@@ -328,6 +345,13 @@
         Ban,
     }
 
+    private enum ReasonModalContext
+    {
+        None,
+        UserModeration,
+        ReportDismissal,
+    }
+
     private List<AdminReportListItemDto> Reports { get; set; } = new();
     private bool IsProcessingAction { get; set; }
     private string? ActionErrorMessage { get; set; }
@@ -339,6 +363,9 @@
     private string PendingModerationTargetName { get; set; } = string.Empty;
     private string? PendingModerationTargetEmail { get; set; }
     private ReportModerationAction? PendingModerationAction { get; set; }
+    private Guid? PendingDismissReportId { get; set; }
+    private AdminReportListItemDto? PendingDismissReport { get; set; }
+    private ReasonModalContext PendingReasonModalContext { get; set; }
     private HubConnection? _hub;
 
     protected override async Task OnInitializedAsync()
@@ -367,7 +394,7 @@
     {
         if (_hub is not null)
             await _hub.DisposeAsync();
-    }   
+    }
 
     private async Task ReloadReportsAsync()
     {
@@ -411,13 +438,39 @@
         }
     }
 
-    private async Task DismissAsync(Guid reportId)
+    private async Task DismissAsync(AdminReportListItemDto report)
     {
-        var report = Reports.FirstOrDefault(r => r.ReportId == reportId);
+        ActionErrorMessage = null;
+        ActionSuccessMessage = null;
 
-        var didSucceed = await ApplyReportActionAsync(
-            reportId,
-            (id, reviewerId) => ReportService.DismissReportAsync(id, reviewerId),
+        if (ActionModal == null)
+        {
+            return;
+        }
+
+        PendingDismissReportId = report.ReportId;
+        PendingDismissReport = report;
+        PendingReasonModalContext = ReasonModalContext.ReportDismissal;
+
+        await ActionModal.OpenAsync(
+            AdminActionModalType.Reason,
+            "Dismiss Report",
+            "Please provide a reason for dismissing this report.");
+    }
+
+    private async Task SubmitDismissWithReasonAsync(string reason)
+    {
+        if (PendingDismissReportId is null)
+        {
+            return;
+        }
+
+        var normalizedReason = reason.Trim();
+        var report = PendingDismissReport;
+
+        var didSucceed = await ApplyReportDismissActionAsync(
+            PendingDismissReportId.Value,
+            normalizedReason,
             "Report dismissed.");
 
         if (didSucceed && report != null)
@@ -432,9 +485,16 @@
                     ActorId = null,
                     TargetId = report.ReportId.ToString(),
                     TargetType = "Report",
-                    Message = $"Your report has been reviewed and dismissed. Thank you for your feedback."
+                    Message = $"Your report has been reviewed and dismissed. Reason: {normalizedReason}"
                 });
             }
+
+            if (ActionModal != null)
+            {
+                await ActionModal.CloseAsync();
+            }
+
+            return;
         }
     }
 
@@ -501,6 +561,7 @@
         }
 
         PendingModerationAction = action;
+        PendingReasonModalContext = ReasonModalContext.UserModeration;
 
         var title = action == ReportModerationAction.Ban ? "Ban Reported User" : "Deactivate Reported User";
         var message = action == ReportModerationAction.Ban
@@ -526,6 +587,12 @@
 
     private async Task OnConfirmModerationReasonAsync(string reason)
     {
+        if (PendingReasonModalContext == ReasonModalContext.ReportDismissal)
+        {
+            await SubmitDismissWithReasonAsync(reason);
+            return;
+        }
+
         if (ActionModal == null || PendingModerationAction == null || string.IsNullOrWhiteSpace(PendingModerationTargetUserId))
         {
             return;
@@ -571,6 +638,7 @@
     private Task OnModalCloseAsync()
     {
         ClearPendingModeration();
+        ClearPendingDismiss();
         return Task.CompletedTask;
     }
 
@@ -579,7 +647,19 @@
         PendingModerationReportId = null;
         PendingModerationTargetUserId = null;
         PendingModerationTargetName = string.Empty;
+        PendingModerationTargetEmail = null;
         PendingModerationAction = null;
+        PendingReasonModalContext = ReasonModalContext.None;
+    }
+
+    private void ClearPendingDismiss()
+    {
+        PendingDismissReportId = null;
+        PendingDismissReport = null;
+        if (PendingReasonModalContext == ReasonModalContext.ReportDismissal)
+        {
+            PendingReasonModalContext = ReasonModalContext.None;
+        }
     }
 
     private async Task<bool> ApplyReportActionAsync(
@@ -611,6 +691,49 @@
             {
                 ActionErrorMessage = string.IsNullOrWhiteSpace(error)
                     ? "Unable to process report."
+                    : error;
+                return false;
+            }
+
+            ActionSuccessMessage = successMessage;
+            await ReloadReportsAsync();
+            return true;
+        }
+        finally
+        {
+            IsProcessingAction = false;
+        }
+    }
+
+    private async Task<bool> ApplyReportDismissActionAsync(
+        Guid reportId,
+        string dismissReason,
+        string successMessage)
+    {
+        if (IsProcessingAction)
+        {
+            return false;
+        }
+
+        IsProcessingAction = true;
+        ActionErrorMessage = null;
+        ActionSuccessMessage = null;
+
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var reviewerId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(reviewerId))
+            {
+                ActionErrorMessage = "Unable to resolve your admin session.";
+                return false;
+            }
+
+            var (success, error) = await ReportService.DismissReportAsync(reportId, reviewerId, dismissReason);
+            if (!success)
+            {
+                ActionErrorMessage = string.IsNullOrWhiteSpace(error)
+                    ? "Unable to process report dismissal."
                     : error;
                 return false;
             }

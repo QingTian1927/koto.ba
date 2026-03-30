@@ -61,6 +61,7 @@ namespace Kotoba.Modules.Infrastructure.Repositories
                 CategoryId = r.CategoryId,
                 CategoryName = r.Category.Name,
                 Description = r.Description,
+                AdminDecisionReason = r.AdminDecisionReason,
                 ReportedContent = r.ReportedContent,
                 Status = r.Status,
             })
@@ -464,11 +465,16 @@ namespace Kotoba.Modules.Infrastructure.Repositories
         return reports;
     }
 
-    public async Task<(bool success, string error)> UpdateStatusAsync(Guid reportId, ReportStatus status, string reviewerId)
+    public async Task<(bool success, string error)> UpdateStatusAsync(Guid reportId, ReportStatus status, string reviewerId, string? adminDecisionReason = null)
     {
         if (string.IsNullOrWhiteSpace(reviewerId))
         {
             return (false, "Unable to resolve reviewer account.");
+        }
+
+        if (status == ReportStatus.Dismissed && string.IsNullOrWhiteSpace(adminDecisionReason))
+        {
+            return (false, "A dismissal reason is required.");
         }
 
         await using var ctx = await _factory.CreateDbContextAsync();
@@ -486,6 +492,9 @@ namespace Kotoba.Modules.Infrastructure.Repositories
         report.Status = status;
         report.ReviewedAt = DateTime.UtcNow;
         report.ReviewerId = reviewerId.Trim();
+        report.AdminDecisionReason = status == ReportStatus.Dismissed
+            ? adminDecisionReason?.Trim()
+            : null;
 
         await ctx.SaveChangesAsync();
         return (true, string.Empty);

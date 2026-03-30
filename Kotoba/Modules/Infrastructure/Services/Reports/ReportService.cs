@@ -35,15 +35,20 @@ namespace Kotoba.Modules.Infrastructure.Services.Reports
             return result;
         }
 
-        public async Task<(bool success, string error)> DismissReportAsync(Guid reportId, string reviewerId)
+        public async Task<(bool success, string error)> DismissReportAsync(Guid reportId, string reviewerId, string dismissReason)
         {
-            var result = await _repo.UpdateStatusAsync(reportId, Domain.Enums.ReportStatus.Dismissed, reviewerId);
+            var result = await _repo.UpdateStatusAsync(
+                reportId,
+                Domain.Enums.ReportStatus.Dismissed,
+                reviewerId,
+                dismissReason);
             await TraceReportModerationAsync(
                 reportId,
                 reviewerId,
                 "dismissed",
                 result.success,
-                result.error);
+                result.error,
+                dismissReason);
 
             return result;
         }
@@ -82,7 +87,8 @@ namespace Kotoba.Modules.Infrastructure.Services.Reports
             string reviewerId,
             string actionLabel,
             bool isSuccess,
-            string errorMessage)
+            string errorMessage,
+            string? adminDecisionReason = null)
         {
             return _adminAuditService.TraceAsync(new AdminAuditEntryRequest
             {
@@ -92,7 +98,9 @@ namespace Kotoba.Modules.Infrastructure.Services.Reports
                 TargetEntityType = "Report",
                 TargetEntityId = reportId.ToString(),
                 Summary = isSuccess
-                    ? $"Report {actionLabel}."
+                    ? string.IsNullOrWhiteSpace(adminDecisionReason)
+                        ? $"Report {actionLabel}."
+                        : $"Report {actionLabel}. Reason: {adminDecisionReason}"
                     : $"Failed to mark report as {actionLabel}: {errorMessage}",
             });
         }
